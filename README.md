@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div align="center">
 
 # 🛡️ FraudShield AI Enterprise
@@ -434,3 +435,64 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
 Made with ❤️ by **[Rahul](https://github.com/rahulbh8077)**
 
 </div>
+=======
+# Online Fraud Detection System
+
+An end-to-end machine-learning prototype for transaction fraud-risk assessment. It supports PaySim-style training data, a FastAPI prediction API, an interactive Streamlit dashboard, individual assessments, and bulk CSV/XLSX screening.
+
+> **Safety:** A model prediction is not confirmed fraud. High-risk transactions should be flagged for additional review. This prototype is not a standalone financial decision system.
+
+## Architecture
+
+```text
+PaySim dataset → validation → leakage-safe preprocessing/feature engineering
+→ stratified train/test split → model comparison → serialized model
+→ FastAPI / Streamlit → probability → risk score → explanation
+
+User dataset → profile + column mapping + compatibility check → bulk screening
+→ results, charts, and CSV download
+```
+
+## Dataset
+
+Download the public [PaySim simulator dataset](https://www.kaggle.com/datasets/ealaxi/paysim1) and place `PS_20174392719_1491204439457_log.csv` under `data/raw/`. It is intentionally not committed. The actual PaySim fields used are `step`, `type`, `amount`, `oldbalanceOrg`, `newbalanceOrig`, `oldbalanceDest`, `newbalanceDest`, and `isFraud`.
+
+No metrics are supplied in this repository: `python -m src.train` calculates them from your real dataset, preventing fabricated results.
+
+## Install and run
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python -m src.train data/raw/PS_20174392719_1491204439457_log.csv
+uvicorn app.main:app --reload
+# separate terminal
+streamlit run dashboard/app.py
+pytest
+```
+
+API docs: `http://127.0.0.1:8000/docs`. Dashboard: `http://localhost:8501`. Docker: `docker compose up --build`.
+
+## API example
+
+```bash
+curl -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" -d "{\"step\":1,\"type\":\"TRANSFER\",\"amount\":15000,\"oldbalanceOrg\":20000,\"newbalanceOrig\":5000,\"oldbalanceDest\":0,\"newbalanceDest\":15000}"
+```
+
+Responses include model-derived probability, 0–100 risk score, risk level, safe decision label, and feature-based contributing factors. Default thresholds are <30% legitimate, 30–70% suspicious, and ≥70% fraudulent; production thresholds should be optimized on validation data and business cost.
+
+## ML approach and safeguards
+
+Features are row-local (balance changes/errors, log amount, balance ratio, high-amount indicator); no label or future transactions are used. Imputation, scaling, encoding, and fitting live inside a sklearn Pipeline trained only on the training partition. The split is stratified. Logistic Regression, Decision Tree, Random Forest, and HistGradientBoosting are compared; selection maximizes PR-AUC, then recall, rather than accuracy.
+
+`reports/model_metrics.json` records real dataset size, fraud rate, comparison metrics, and selection after training. Artifacts in `models/` are loaded for inference and never retrained by the API.
+
+## Upload & Check Dataset
+
+The dashboard accepts CSV and XLSX uploads, profiles missing values/duplicates/infinite and negative amounts, proposes column aliases, and requires mapping confirmation. Compatible files can be screened in bulk without modifying originals. Exports append probability, score, risk, prediction, model version, and timestamp. Labeled uploads additionally get evaluation metrics; unlabeled uploads are clearly marked as predictions only.
+
+## Limitations and roadmap
+
+PaySim is simulated data and lacks device, geography, merchant, and behavioral signals. Uploads are in-memory, suitable for moderate files. Future work: calibrated thresholds, SHAP/permutation explanations, chunked large-file processing, drift monitoring, authenticated storage, streaming ingestion, and human-review workflows.
+>>>>>>> dea617f (Initial commit: online fraud detection system)

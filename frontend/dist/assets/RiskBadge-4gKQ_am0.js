@@ -1,0 +1,1 @@
+import{E as e,G as t,b as n}from"./index-D5CeDiVm.js";t();var r=n(),i={CRITICAL:`⛔`,HIGH:`🔴`,MEDIUM:`🟡`,LOW:`🟢`};function a({level:t,showIcon:n=!1}){let a=t?.toUpperCase();return(0,r.jsxs)(`span`,{className:e(a),"aria-label":`Risk: ${a}`,children:[n&&i[a]&&(0,r.jsx)(`span`,{className:`mr-1`,children:i[a]}),a]})}export{a as t};
