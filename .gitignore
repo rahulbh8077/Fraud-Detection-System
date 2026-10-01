@@ -9,3 +9,6 @@ data/processed/*
 models/*.joblib
 reports/*.json
 uploads/
+*.zip
+*.db
+

@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 <div align="center">
 
 # 🛡️ FraudShield AI Enterprise
@@ -437,62 +438,232 @@ Made with ❤️ by **[Rahul](https://github.com/rahulbh8077)**
 </div>
 =======
 # Online Fraud Detection System
+=======
+# FraudShield AI
+### AI-Powered Transaction Risk & Fraud Intelligence Platform
+>>>>>>> edd521a7 (Add full project code, FastAPI backend, ML modules, and React frontend)
 
-An end-to-end machine-learning prototype for transaction fraud-risk assessment. It supports PaySim-style training data, a FastAPI prediction API, an interactive Streamlit dashboard, individual assessments, and bulk CSV/XLSX screening.
+> **Model Disclaimer:** FraudShield AI provides machine-learning-based risk estimates. A prediction does not establish that a transaction is fraudulent. High-risk transactions should be reviewed using appropriate organizational procedures.
 
-> **Safety:** A model prediction is not confirmed fraud. High-risk transactions should be flagged for additional review. This prototype is not a standalone financial decision system.
+---
+
+## Overview
+
+FraudShield AI is a full-stack, production-quality fraud detection platform combining a trained ML pipeline with a professional dark-theme React dashboard and FastAPI backend. It analyzes PaySim-style financial transaction data to identify potentially fraudulent activity using multiple ML models.
+
+**Capabilities:**
+- Real-time single transaction risk analysis with structured explanations
+- Bulk CSV/XLSX upload, profiling, column mapping, and fraud screening
+- Model performance monitoring (ROC curve, PR curve, confusion matrix, feature importance)
+- 4-model comparison (Logistic Regression, Decision Tree, Random Forest, Gradient Boosting)
+- 13-page professional dashboard with dark/light mode
+
+---
 
 ## Architecture
 
-```text
-PaySim dataset → validation → leakage-safe preprocessing/feature engineering
-→ stratified train/test split → model comparison → serialized model
-→ FastAPI / Streamlit → probability → risk score → explanation
-
-User dataset → profile + column mapping + compatibility check → bulk screening
-→ results, charts, and CSV download
+```
+React Frontend (TypeScript + Tailwind + Recharts)
+        │ HTTP/REST
+        ▼
+FastAPI Backend (Python 3.11+)
+  POST /predict          — Single transaction analysis
+  POST /predict/batch    — Bulk dataset prediction
+  POST /upload/analyze   — Full analysis pipeline
+  GET  /analytics/*      — Training-time statistics
+  GET  /health           — System health check
+  GET  /model-info       — Full model metadata
+        │
+        ▼
+ML Pipeline (scikit-learn)
+  src/train.py           — Model training + comparison
+  src/features.py        — Feature engineering (row-local)
+  src/predict.py         — Inference + explanations
+  src/analytics.py       — Analytics computations
+        │
+        ▼
+models/fraud_detection_model.joblib
+reports/model_metrics.json
 ```
 
-## Dataset
+---
 
-Download the public [PaySim simulator dataset](https://www.kaggle.com/datasets/ealaxi/paysim1) and place `PS_20174392719_1491204439457_log.csv` under `data/raw/`. It is intentionally not committed. The actual PaySim fields used are `step`, `type`, `amount`, `oldbalanceOrg`, `newbalanceOrig`, `oldbalanceDest`, `newbalanceDest`, and `isFraud`.
+## Quick Start
 
-No metrics are supplied in this repository: `python -m src.train` calculates them from your real dataset, preventing fabricated results.
-
-## Install and run
+### Prerequisites: Python 3.11+, Node.js 18+
 
 ```bash
+# 1. Install Python dependencies
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-python -m src.train data/raw/PS_20174392719_1491204439457_log.csv
-uvicorn app.main:app --reload
-# separate terminal
-streamlit run dashboard/app.py
-pytest
+
+# 2. Generate demo data and train (100K synthetic rows)
+python -m src.generate_demo_data
+python -m src.train data/raw/demo_transactions.csv
+
+# Or use real PaySim dataset:
+# python -m src.train data/raw/PS_20174392719_1491204439457_log.csv
+
+# 3. Build the React frontend
+cd frontend && npm install && npm run build && cd ..
+
+# 4. Start the server (serves API + React at http://localhost:8000)
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# 5. Or run dev mode (hot-reload, frontend at http://localhost:3000)
+# Terminal 1: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# Terminal 2: cd frontend && npm run dev
 ```
 
-API docs: `http://127.0.0.1:8000/docs`. Dashboard: `http://localhost:8501`. Docker: `docker compose up --build`.
+Interactive API docs: http://localhost:8000/api/docs
+Dashboard: http://localhost:8000
 
-## API example
+---
+
+## ML Approach
+
+### Feature Engineering (row-local, no leakage)
+| Feature | Description |
+|---------|-------------|
+| `log_amount` | Log-scaled transaction amount |
+| `origin_balance_change` | old − new origin balance |
+| `destination_balance_change` | new − old destination balance |
+| `origin_balance_error` | Balance inconsistency (fraud signal) |
+| `destination_balance_error` | Balance inconsistency (fraud signal) |
+| `amount_to_origin_balance` | Amount / original balance ratio |
+| `unusually_high_amount` | Binary flag: amount ≥ 100,000 |
+
+### Model Selection (PR-AUC prioritized for class imbalance)
+| Model | PR-AUC | Recall |
+|-------|--------|--------|
+| **Random Forest** ✓ | **0.8107** | 0.8067 |
+| Logistic Regression | 0.7986 | 0.9963 |
+| Gradient Boosting | 0.7842 | 0.8141 |
+| Decision Tree | 0.7879 | 0.9777 |
+
+### Demo Dataset Results (100K synthetic rows)
+| Metric | Value |
+|--------|-------|
+| Accuracy | 99.38% |
+| Precision | 74.83% |
+| Recall | 80.67% |
+| F1 | 77.64% |
+| ROC-AUC | 0.9905 |
+| PR-AUC | 0.8107 |
+
+> ⚠️ Demo data is synthetic. Real PaySim metrics will differ.
+
+---
+
+## API Reference
+
+### POST /predict
+```json
+// Request
+{
+  "step": 1,
+  "type": "TRANSFER",
+  "amount": 75000,
+  "oldbalanceOrg": 80000,
+  "newbalanceOrig": 5000,
+  "oldbalanceDest": 0,
+  "newbalanceDest": 75000
+}
+
+// Response
+{
+  "prediction": "FRAUDULENT",
+  "fraud_probability": 0.923456,
+  "risk_score": 92,
+  "risk_level": "HIGH",
+  "explanation": [...],
+  "recommended_action": "Flag for additional review.",
+  "model_name": "Random Forest",
+  "model_version": "1.0"
+}
+```
+
+Valid types: `CASH_IN`, `CASH_OUT`, `DEBIT`, `PAYMENT`, `TRANSFER`
+
+### GET /health → System + model status
+### GET /analytics/overview → Training-time fraud statistics
+### POST /upload/analyze → Bulk prediction (CSV/XLSX)
+### POST /reports/download-csv → Export results
+
+---
+
+## Project Structure
+
+```
+Fraud Detection System/
+├── app/main.py              FastAPI backend (15 endpoints + static serving)
+├── src/
+│   ├── config.py            Paths and constants
+│   ├── generate_demo_data.py  Synthetic dataset (100K rows)
+│   ├── train.py             Training + evaluation + metrics export
+│   ├── features.py          Row-local feature engineering
+│   ├── predict.py           Inference + structured explanations
+│   ├── analytics.py         Dataset analytics computations
+│   ├── report_generator.py  CSV/XLSX export
+│   └── data_preprocessing.py  Validation + quality reports
+├── frontend/
+│   ├── src/pages/           13 full-featured pages
+│   ├── src/components/      Reusable UI component library
+│   ├── src/api/             Typed API client
+│   └── dist/                Production build (served by FastAPI)
+├── dashboard/app.py         Legacy Streamlit dashboard (preserved)
+├── models/                  Serialized model artifact
+├── reports/                 Training metrics JSON
+├── data/raw/                Dataset directory
+└── requirements.txt
+```
+
+---
+
+## Docker
 
 ```bash
-curl -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" -d "{\"step\":1,\"type\":\"TRANSFER\",\"amount\":15000,\"oldbalanceOrg\":20000,\"newbalanceOrig\":5000,\"oldbalanceDest\":0,\"newbalanceDest\":15000}"
+docker compose up --build
+# API + React: http://localhost:8000
+# Streamlit (legacy): http://localhost:8501
 ```
 
-Responses include model-derived probability, 0–100 risk score, risk level, safe decision label, and feature-based contributing factors. Default thresholds are <30% legitimate, 30–70% suspicious, and ≥70% fraudulent; production thresholds should be optimized on validation data and business cost.
+---
 
-## ML approach and safeguards
+## Limitations
 
-Features are row-local (balance changes/errors, log amount, balance ratio, high-amount indicator); no label or future transactions are used. Imputation, scaling, encoding, and fitting live inside a sklearn Pipeline trained only on the training partition. The split is stratified. Logistic Regression, Decision Tree, Random Forest, and HistGradientBoosting are compared; selection maximizes PR-AUC, then recall, rather than accuracy.
+- **Synthetic/simulated data**: PaySim is a simulator; not real transaction history.
+- **No real-time streaming**: Batch processing only, not live transaction streams.
+- **No authentication**: Demo platform; production requires auth.
+- **No behavioral signals**: Missing device, location, and merchant signals.
+- **Threshold defaults**: 0.30/0.70 thresholds are defaults, not optimized for any specific cost structure.
+- **In-memory**: Large files (>100MB) need chunked processing for production.
 
-`reports/model_metrics.json` records real dataset size, fraud rate, comparison metrics, and selection after training. Artifacts in `models/` are loaded for inference and never retrained by the API.
+---
 
-## Upload & Check Dataset
+## Technology Stack
 
-The dashboard accepts CSV and XLSX uploads, profiles missing values/duplicates/infinite and negative amounts, proposes column aliases, and requires mapping confirmation. Compatible files can be screened in bulk without modifying originals. Exports append probability, score, risk, prediction, model version, and timestamp. Labeled uploads additionally get evaluation metrics; unlabeled uploads are clearly marked as predictions only.
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, TypeScript, Tailwind CSS, Recharts, Lucide React, Vite |
+| Backend | FastAPI, Uvicorn, Pydantic v2 |
+| ML | scikit-learn, NumPy, Pandas, Joblib |
+| Export | OpenPyXL, CSV |
 
-## Limitations and roadmap
+---
 
+<<<<<<< HEAD
 PaySim is simulated data and lacks device, geography, merchant, and behavioral signals. Uploads are in-memory, suitable for moderate files. Future work: calibrated thresholds, SHAP/permutation explanations, chunked large-file processing, drift monitoring, authenticated storage, streaming ingestion, and human-review workflows.
 >>>>>>> dea617f (Initial commit: online fraud detection system)
+=======
+## Future Improvements
+
+- SHAP integration for Shapley value explanations
+- Calibrated probabilities (Platt scaling / isotonic regression)
+- Chunked large-file streaming processing
+- Data drift monitoring
+- Authenticated multi-user workspace
+- PDF report generation
+- User-configurable risk thresholds with cost-benefit analysis
+>>>>>>> edd521a7 (Add full project code, FastAPI backend, ML modules, and React frontend)
