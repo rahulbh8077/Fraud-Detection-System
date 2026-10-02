@@ -12,6 +12,8 @@ export default defineConfig({
       '/health': 'http://localhost:8000',
       '/model-info': 'http://localhost:8000',
       '/reports': 'http://localhost:8000',
+      '/rules': 'http://localhost:8000',
+      '/cases': 'http://localhost:8000',
     }
   },
   build: {
