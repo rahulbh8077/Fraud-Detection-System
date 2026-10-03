@@ -25,11 +25,11 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <PageMetaContext.Provider value={setPageMeta}>
-      <div className="flex h-screen overflow-hidden bg-navy-900">
+      <div className="flex h-screen overflow-hidden" style={{ background: '#08080f' }}>
         <Sidebar modelOnline={modelOnline} modelName={modelName} />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header title={pageMeta.title} subtitle={pageMeta.subtitle} modelOnline={modelOnline} />
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-6 page-enter">
             {children}
           </main>
         </div>
