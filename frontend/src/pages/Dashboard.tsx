@@ -12,21 +12,31 @@ import { useApp } from '../context/AppContext';
 
 const RISK_COLORS = { LOW: '#10b981', MEDIUM: '#f59e0b', HIGH: '#f43f5e', CRITICAL: '#dc2626' };
 const TYPE_COLORS = ['#7c3aed', '#06b6d4', '#10b981', '#f59e0b', '#f43f5e'];
-const TOOLTIP_STYLE = {
-  background: 'rgba(13,13,23,0.97)',
-  border: '1px solid rgba(124,58,237,0.3)',
-  borderRadius: 12,
-  color: '#e2e8f0',
-  fontWeight: 'bold',
-  boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-  backdropFilter: 'blur(8px)',
-};
-const GRID_COLOR = 'rgba(124,58,237,0.08)';
-
 export default function Dashboard() {
   usePageMeta('Fraud Intelligence Dashboard', 'Monitor transaction risk, fraud patterns, and model performance.');
-  const { addToast } = useApp();
+  const { addToast, theme } = useApp();
+  const isDark = theme === 'dark';
   const [analytics, setAnalytics] = useState<any>(null);
+
+  const tooltipStyle = isDark ? {
+    background: 'rgba(13,13,23,0.97)',
+    border: '1px solid rgba(124,58,237,0.3)',
+    borderRadius: 12,
+    color: '#e2e8f0',
+    fontWeight: 'bold',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+    backdropFilter: 'blur(8px)',
+  } : {
+    background: '#ffffff',
+    border: '1px solid #e5e5e5',
+    borderRadius: 12,
+    color: '#000000',
+    fontWeight: 'bold',
+    boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+  };
+
+  const gridColor = isDark ? 'rgba(124,58,237,0.08)' : '#f0f0f0';
+  const axisTextColor = isDark ? '#94a3b8' : '#525252';
   const [model, setModel] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,8 +115,8 @@ export default function Dashboard() {
                 <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={3} dataKey="value">
                   {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                 </Pie>
-                <Tooltip formatter={(v: any) => formatNumber(v)} contentStyle={TOOLTIP_STYLE} />
-                <Legend formatter={(v) => <span className="text-xs font-bold text-slate-300">{v}</span>} />
+                <Tooltip formatter={(v: any) => formatNumber(v)} contentStyle={tooltipStyle} />
+                <Legend formatter={(v) => <span className="text-xs font-bold" style={{ color: isDark ? '#cbd5e1' : '#171717' }}>{v}</span>} />
               </PieChart>
             </ResponsiveContainer>
           )}
@@ -125,17 +135,11 @@ export default function Dashboard() {
                     <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
-                <XAxis dataKey="step_bucket" tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 'bold' }} label={{ value: 'Day', position: 'insideBottomRight', fill: '#94a3b8', fontSize: 11, fontWeight: 'bold' }} />
-                <YAxis tickFormatter={(v) => `${(v * 100).toFixed(1)}%`} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 'bold' }} />
-                <Tooltip formatter={(v: any) => [`${(v * 100).toFixed(2)}%`, 'Fraud Rate']} contentStyle={TOOLTIP_STYLE} />
-                <defs>
-                  <linearGradient id="fraudGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#f43f5e" stopOpacity={0.5} />
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <Area type="monotone" dataKey="fraud_rate" stroke="#f43f5e" fill="url(#fraudGrad)" strokeWidth={2.5} dot={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                <XAxis dataKey="step_bucket" tick={{ fill: axisTextColor, fontSize: 11, fontWeight: 'bold' }} label={{ value: 'Day', position: 'insideBottomRight', fill: axisTextColor, fontSize: 11, fontWeight: 'bold' }} />
+                <YAxis tickFormatter={(v) => `${(v * 100).toFixed(1)}%`} tick={{ fill: axisTextColor, fontSize: 11, fontWeight: 'bold' }} />
+                <Tooltip formatter={(v: any) => [`${(v * 100).toFixed(2)}%`, 'Fraud Rate']} contentStyle={tooltipStyle} />
+                <Area type="monotone" dataKey="fraud_rate" stroke="#ef4444" fill="url(#fraudGrad)" strokeWidth={2.5} dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           )}
@@ -151,10 +155,10 @@ export default function Dashboard() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={typeStats} layout="vertical" margin={{ left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} horizontal={false} />
-                <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 'bold' }} />
-                <YAxis type="category" dataKey="type" tick={{ fill: '#cbd5e1', fontSize: 12, fontWeight: 'bold' }} width={80} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={false} />
+                <XAxis type="number" tick={{ fill: axisTextColor, fontSize: 11, fontWeight: 'bold' }} />
+                <YAxis type="category" dataKey="type" tick={{ fill: isDark ? '#cbd5e1' : '#171717', fontSize: 12, fontWeight: 'bold' }} width={80} />
+                <Tooltip contentStyle={tooltipStyle} />
                 <Bar dataKey="fraud_count" name="Fraud Count" radius={[0, 6, 6, 0]}>
                   {typeStats.map((_, i) => <Cell key={i} fill={TYPE_COLORS[i % TYPE_COLORS.length]} />)}
                 </Bar>
@@ -170,10 +174,10 @@ export default function Dashboard() {
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={typeStats}>
-                <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
-                <XAxis dataKey="type" tick={{ fill: '#cbd5e1', fontSize: 11, fontWeight: 'bold' }} />
-                <YAxis tickFormatter={(v) => `${v}%`} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 'bold' }} />
-                <Tooltip formatter={(v: any) => [`${v}%`, 'Fraud Rate']} contentStyle={TOOLTIP_STYLE} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                <XAxis dataKey="type" tick={{ fill: isDark ? '#cbd5e1' : '#171717', fontSize: 11, fontWeight: 'bold' }} />
+                <YAxis tickFormatter={(v) => `${v}%`} tick={{ fill: axisTextColor, fontSize: 11, fontWeight: 'bold' }} />
+                <Tooltip formatter={(v: any) => [`${v}%`, 'Fraud Rate']} contentStyle={tooltipStyle} />
                 <defs>
                   <linearGradient id="amberBar" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%"  stopColor="#f59e0b" stopOpacity={1} />

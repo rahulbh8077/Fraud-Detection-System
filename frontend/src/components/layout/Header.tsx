@@ -1,6 +1,7 @@
-import React from 'react';
-import { Bell, Sun, Moon, Command } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, Sun, Moon, Command, Search } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { SearchModal } from '../ui/SearchModal';
 
 interface Props {
   title: string;
@@ -10,150 +11,242 @@ interface Props {
 
 export function Header({ title, subtitle, modelOnline = false }: Props) {
   const { theme, toggleTheme } = useApp();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const isDark = theme === 'dark';
+
+  // Global ⌘K / Ctrl+K and '/' shortcut listener
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Don't trigger if already inside an input or textarea (unless Cmd/Ctrl key is pressed)
+      const target = e.target as HTMLElement;
+      const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setSearchOpen(prev => !prev);
+      } else if (e.key === '/' && !isInput) {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   return (
-    <header
-      className="h-16 flex items-center px-6 gap-4 shrink-0"
-      style={{
-        background: 'rgba(8,8,15,0.95)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(124,58,237,0.15)',
-        boxShadow: '0 1px 0 rgba(124,58,237,0.08)',
-      }}
-    >
-      {/* Page Title */}
-      <div className="flex-1 min-w-0">
-        <h1
-          className="text-lg font-black tracking-tight truncate"
-          style={{
-            background: 'linear-gradient(135deg, #e2e8f0 0%, #a78bfa 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="text-xs font-medium truncate" style={{ color: 'rgba(148,163,184,0.6)' }}>
-            {subtitle}
-          </p>
-        )}
-      </div>
+    <>
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {/* Search hint */}
-      <button
-        className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+      <header
+        className="h-16 flex items-center px-6 gap-3 md:gap-4 shrink-0 transition-colors duration-200"
         style={{
-          background: 'rgba(124,58,237,0.07)',
-          border: '1px solid rgba(124,58,237,0.18)',
-          color: 'rgba(148,163,184,0.6)',
-        }}
-        onMouseEnter={e => {
-          (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(124,58,237,0.4)';
-          (e.currentTarget as HTMLButtonElement).style.color = 'rgba(167,139,250,0.9)';
-        }}
-        onMouseLeave={e => {
-          (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(124,58,237,0.18)';
-          (e.currentTarget as HTMLButtonElement).style.color = 'rgba(148,163,184,0.6)';
+          background: isDark ? 'rgba(8,8,15,0.95)' : 'rgba(255,255,255,0.98)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: isDark
+            ? '1px solid rgba(124,58,237,0.15)'
+            : '1px solid #e5e5e5',
+          boxShadow: isDark
+            ? '0 1px 0 rgba(124,58,237,0.08)'
+            : '0 1px 4px rgba(0,0,0,0.03)',
         }}
       >
-        <Command className="w-3 h-3" />
-        <span>Quick Search</span>
-        <span
-          className="ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold"
-          style={{ background: 'rgba(124,58,237,0.15)', color: '#a78bfa' }}
-        >
-          ⌘K
-        </span>
-      </button>
+        {/* Page Title */}
+        <div className="flex-1 min-w-0">
+          <h1
+            className="text-lg font-black tracking-tight truncate"
+            style={isDark ? {
+              background: 'linear-gradient(135deg, #e2e8f0 0%, #a78bfa 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            } : {
+              color: '#000000',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {title}
+          </h1>
+          {subtitle && (
+            <p
+              className="text-xs font-medium truncate"
+              style={{ color: isDark ? 'rgba(148,163,184,0.6)' : '#737373' }}
+            >
+              {subtitle}
+            </p>
+          )}
+        </div>
 
-      {/* Live status pill */}
-      <div
-        className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full"
-        style={{
-          background: modelOnline ? 'rgba(16,185,129,0.08)' : 'rgba(244,63,94,0.08)',
-          border: `1px solid ${modelOnline ? 'rgba(16,185,129,0.25)' : 'rgba(244,63,94,0.25)'}`,
-        }}
-      >
-        <span
-          className="w-2 h-2 rounded-full shrink-0"
-          style={{
-            background: modelOnline ? '#10b981' : '#f43f5e',
-            boxShadow: `0 0 6px ${modelOnline ? '#10b981' : '#f43f5e'}`,
-            animation: 'pulse-dot 2s ease-in-out infinite',
-          }}
-        />
-        <span
-          className="text-xs font-bold"
-          style={{ color: modelOnline ? '#34d399' : '#fb7185' }}
-        >
-          {modelOnline ? 'AI Engine Online' : 'Engine Offline'}
-        </span>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-1">
-        {/* Theme toggle */}
+        {/* Quick Search Button (Desktop: Pill with badge, Mobile: Icon button) */}
         <button
-          onClick={toggleTheme}
-          className="p-2 rounded-lg transition-all duration-200"
-          style={{ color: 'rgba(148,163,184,0.6)' }}
+          onClick={() => setSearchOpen(true)}
+          className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer"
+          style={isDark ? {
+            background: 'rgba(124,58,237,0.08)',
+            border: '1px solid rgba(124,58,237,0.22)',
+            color: 'rgba(196,181,253,0.85)',
+          } : {
+            background: '#f5f5f5',
+            border: '1px solid #e5e5e5',
+            color: '#404040',
+          }}
           onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.color = '#a78bfa';
-            (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.12)';
+            const el = e.currentTarget as HTMLButtonElement;
+            el.style.borderColor = isDark ? 'rgba(124,58,237,0.5)' : '#000000';
+            el.style.color = isDark ? '#ffffff' : '#000000';
+            el.style.background = isDark ? 'rgba(124,58,237,0.15)' : '#e5e5e5';
           }}
           onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.color = 'rgba(148,163,184,0.6)';
-            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+            const el = e.currentTarget as HTMLButtonElement;
+            el.style.borderColor = isDark ? 'rgba(124,58,237,0.22)' : '#e5e5e5';
+            el.style.color = isDark ? 'rgba(196,181,253,0.85)' : '#404040';
+            el.style.background = isDark ? 'rgba(124,58,237,0.08)' : '#f5f5f5';
           }}
-          aria-label="Toggle theme"
+          aria-label="Open Quick Search (Ctrl+K)"
+          title="Quick Search (Ctrl+K or /)"
         >
-          {theme === 'dark'
-            ? <Sun className="w-4 h-4" />
-            : <Moon className="w-4 h-4" />
-          }
+          <Search className="w-3.5 h-3.5" />
+          <span>Quick Search</span>
+          <span
+            className="ml-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold"
+            style={isDark
+              ? { background: 'rgba(124,58,237,0.25)', color: '#c4b5fd' }
+              : { background: '#000000', color: '#ffffff' }
+            }
+          >
+            ⌘K
+          </span>
         </button>
 
-        {/* Notification bell */}
+        {/* Quick Search Mobile Icon */}
         <button
-          className="relative p-2 rounded-lg transition-all duration-200"
-          style={{ color: 'rgba(148,163,184,0.6)' }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.color = '#a78bfa';
-            (e.currentTarget as HTMLButtonElement).style.background = 'rgba(124,58,237,0.12)';
+          onClick={() => setSearchOpen(true)}
+          className="flex sm:hidden p-2 rounded-xl transition-all duration-150 cursor-pointer"
+          style={isDark ? {
+            background: 'rgba(124,58,237,0.08)',
+            color: '#c4b5fd',
+            border: '1px solid rgba(124,58,237,0.2)',
+          } : {
+            background: '#f5f5f5',
+            color: '#000000',
+            border: '1px solid #e5e5e5',
           }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.color = 'rgba(148,163,184,0.6)';
-            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-          }}
-          aria-label="Notifications"
+          aria-label="Open Search"
         >
-          <Bell className="w-4 h-4" />
-          {/* Notification dot */}
+          <Search className="w-4 h-4" />
+        </button>
+
+        {/* Live status pill */}
+        <div
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-200"
+          style={isDark ? {
+            background: modelOnline ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+            border: `1px solid ${modelOnline ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
+          } : {
+            background: modelOnline ? '#f0fdf4' : '#fef2f2',
+            border: `1px solid ${modelOnline ? '#bbf7d0' : '#fecaca'}`,
+          }}
+        >
           <span
-            className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
+            className="w-2 h-2 rounded-full shrink-0"
             style={{
-              background: '#f43f5e',
-              boxShadow: '0 0 4px #f43f5e',
+              background: modelOnline ? '#10b981' : '#ef4444',
+              boxShadow: `0 0 6px ${modelOnline ? '#10b981' : '#ef4444'}`,
+              animation: 'pulse-dot 2s ease-in-out infinite',
             }}
           />
-        </button>
-
-        {/* User avatar */}
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black cursor-pointer ml-1 transition-all duration-200"
-          style={{
-            background: 'linear-gradient(135deg, #7c3aed, #06b6d4)',
-            color: '#ffffff',
-            boxShadow: '0 0 12px rgba(124,58,237,0.4)',
-          }}
-          title="User Profile"
-        >
-          FS
+          <span
+            className="text-xs font-bold"
+            style={{
+              color: isDark
+                ? (modelOnline ? '#34d399' : '#f87171')
+                : (modelOnline ? '#15803d' : '#b91c1c')
+            }}
+          >
+            {modelOnline ? 'Protection Active' : 'System Degraded'}
+          </span>
         </div>
-      </div>
-    </header>
+
+        {/* Action icons */}
+        <div className="flex items-center gap-1.5">
+          {/* Day / Night Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl transition-all duration-150 cursor-pointer"
+            style={isDark ? {
+              color: '#c4b5fd',
+              background: 'rgba(124,58,237,0.08)',
+              border: '1px solid rgba(124,58,237,0.2)',
+            } : {
+              color: '#000000',
+              background: '#f5f5f5',
+              border: '1px solid #e5e5e5',
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLButtonElement;
+              el.style.background = isDark ? 'rgba(124,58,237,0.2)' : '#000000';
+              el.style.color = '#ffffff';
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLButtonElement;
+              el.style.background = isDark ? 'rgba(124,58,237,0.08)' : '#f5f5f5';
+              el.style.color = isDark ? '#c4b5fd' : '#000000';
+            }}
+            title={isDark ? 'Switch to Day Light Mode' : 'Switch to Dark Mode'}
+            aria-label="Toggle theme"
+          >
+            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+
+          {/* Notifications */}
+          <button
+            className="relative p-2 rounded-xl transition-all duration-150 cursor-pointer"
+            style={isDark ? {
+              color: '#c4b5fd',
+              background: 'rgba(124,58,237,0.08)',
+              border: '1px solid rgba(124,58,237,0.2)',
+            } : {
+              color: '#000000',
+              background: '#f5f5f5',
+              border: '1px solid #e5e5e5',
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLButtonElement;
+              el.style.background = isDark ? 'rgba(124,58,237,0.2)' : '#000000';
+              el.style.color = '#ffffff';
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLButtonElement;
+              el.style.background = isDark ? 'rgba(124,58,237,0.08)' : '#f5f5f5';
+              el.style.color = isDark ? '#c4b5fd' : '#000000';
+            }}
+            aria-label="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+            <span
+              className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
+              style={{ background: '#ef4444', boxShadow: '0 0 4px #ef4444' }}
+            />
+          </button>
+
+          {/* User Profile Avatar */}
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black cursor-pointer ml-0.5 shadow-sm"
+            style={isDark ? {
+              background: 'linear-gradient(135deg, #7c3aed, #06b6d4)',
+              color: '#ffffff',
+              boxShadow: '0 0 12px rgba(124,58,237,0.4)',
+            } : {
+              background: '#000000',
+              color: '#ffffff',
+              border: '1px solid #000000',
+            }}
+            title="User Profile: Admin Analyst"
+          >
+            FS
+          </div>
+        </div>
+      </header>
+    </>
   );
 }
