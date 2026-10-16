@@ -136,12 +136,6 @@ export function Sidebar({ modelOnline = false, modelName = 'FraudShield v2.0' }:
             >
               FraudShield
             </span>
-            <span
-              className="text-[10px] font-semibold block -mt-0.5 tracking-widest uppercase"
-              style={{ color: isDark ? 'rgba(196,181,253,0.7)' : '#737373' }}
-            >
-              AI Enterprise
-            </span>
           </div>
         )}
 

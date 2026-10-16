@@ -517,6 +517,115 @@ html.light .border-navy-500 {
   border-color: #e5e5e5 !important;
 }
 
+/* ── Slate background overrides ────────────────────────────────────── */
+html.light [class*="bg-slate-900"],
+html.light [class*="bg-slate-950"] {
+  background-color: #ffffff !important;
+}
+
+html.light [class*="bg-slate-800"] {
+  background-color: #f5f5f5 !important;
+}
+
+html.light [class*="bg-slate-700"] {
+  background-color: #e5e5e5 !important;
+}
+
+/* ── Slate border overrides ────────────────────────────────────────── */
+html.light [class*="border-slate-800"],
+html.light [class*="border-slate-700"],
+html.light [class*="border-slate-900"] {
+  border-color: #e5e5e5 !important;
+}
+
+/* ── Table dividers ────────────────────────────────────────────────── */
+html.light [class*="divide-slate-800"] > * + *,
+html.light [class*="divide-slate-700"] > * + * {
+  border-color: #e5e5e5 !important;
+}
+
+/* ── Hover overrides ───────────────────────────────────────────────── */
+html.light [class*="hover:bg-slate-800"]:hover,
+html.light [class*="hover:bg-slate-700"]:hover {
+  background-color: #f5f5f5 !important;
+}
+
+/* ── Indigo accents ────────────────────────────────────────────────── */
+html.light .text-indigo-400 {
+  color: #4f46e5 !important;
+}
+html.light .bg-indigo-500\/10 {
+  background-color: #eff6ff !important;
+}
+html.light .border-indigo-500\/20 {
+  border-color: rgba(99,102,241,0.25) !important;
+}
+
+/* ── Rose badge ────────────────────────────────────────────────────── */
+html.light [class*="bg-rose-500\/20"],
+html.light [class*="bg-rose-500\/10"] {
+  background-color: #fef2f2 !important;
+}
+html.light .text-rose-400,
+html.light .text-rose-300 {
+  color: #b91c1c !important;
+}
+html.light [class*="border-rose-500"] {
+  border-color: #fecaca !important;
+}
+
+/* ── Orange badge ──────────────────────────────────────────────────── */
+html.light [class*="bg-orange-500\/20"] {
+  background-color: #fff7ed !important;
+}
+html.light .text-orange-400 {
+  color: #c2410c !important;
+}
+html.light [class*="border-orange-500"] {
+  border-color: #fed7aa !important;
+}
+
+/* ── Amber badge ───────────────────────────────────────────────────── */
+html.light [class*="bg-amber-500\/20"] {
+  background-color: #fffbeb !important;
+}
+html.light .text-amber-400 {
+  color: #b45309 !important;
+}
+html.light [class*="border-amber-500"] {
+  border-color: #fde68a !important;
+}
+
+/* ── Blue badge ────────────────────────────────────────────────────── */
+html.light [class*="bg-blue-500\/20"] {
+  background-color: #eff6ff !important;
+}
+html.light .text-blue-400 {
+  color: #1d4ed8 !important;
+}
+html.light [class*="border-blue-500"] {
+  border-color: #bfdbfe !important;
+}
+
+/* ── Emerald badge ─────────────────────────────────────────────────── */
+html.light [class*="bg-emerald-500\/20"],
+html.light [class*="bg-emerald-500\/10"] {
+  background-color: #f0fdf4 !important;
+}
+html.light .text-emerald-400,
+html.light .text-emerald-300 {
+  color: #15803d !important;
+}
+html.light [class*="border-emerald-500"] {
+  border-color: #bbf7d0 !important;
+}
+
+/* ── Modal overlay ─────────────────────────────────────────────────── */
+html.light [class*="bg-slate-950\/80"] {
+  background-color: rgba(0,0,0,0.4) !important;
+}
+
+/* ── Scrollbars ────────────────────────────────────────────────────── */
 html.light ::-webkit-scrollbar-track {
   background: #ffffff !important;
 }
